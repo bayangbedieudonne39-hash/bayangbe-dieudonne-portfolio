@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portail BAYANGBE - Connexion</title>
+    <!-- Police Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: #030712;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Toile de fond pour la pluie de 0 et 1 */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Conteneur principal du portail */
+        .portal-container {
+            position: relative;
+            z-index: 2;
+            background: rgba(8, 15, 30, 0.9);
+            border: 2px solid #00d2ff;
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.4);
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+        }
+
+        .portal-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .portal-header h1 {
+            color: #00d2ff;
+            font-size: 26px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-shadow: 0 0 12px rgba(0, 210, 255, 0.8);
+            margin-bottom: 8px;
+        }
+
+        .portal-header p {
+            color: #94a3b8;
+            font-size: 12px;
+            letter-spacing: 1.5px;
+        }
+
+        /* Messages d'alerte Django */
+        .messages {
+            margin-bottom: 20px;
+            list-style: none;
+        }
+        .messages li {
+            padding: 10px;
+            font-size: 13px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            background: rgba(0, 210, 255, 0.1);
+            border: 1px solid #00d2ff;
+            color: #38bdf8;
+            text-align: center;
+        }
+
+        /* Formulaire Django */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #e2e8f0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Style appliqué aux champs générés par Django */
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(2, 6, 23, 0.95);
+            border: 1px solid #1e3a8a;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00d2ff;
+            box-shadow: 0 0 12px rgba(0, 210, 255, 0.5);
+        }
+
+        /* Gestion de l'affichage des erreurs de formulaire Django */
+        .errorlist {
+            list-style: none;
+            color: #f87171;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #00d2ff, #2563eb);
+            border: none;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #2563eb, #00d2ff);
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .portal-footer {
+            margin-top: 25px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .portal-footer a {
+            color: #60a5fa;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .portal-footer a:hover {
+            color: #00d2ff;
+            text-decoration: underline;
+        }
+        /* Adaptation Responsive pour mobiles et petits écrans */
+
+        @media (max-width: 480px) {
+            .portal-container {
+                padding: 20px;
+                max-width: 90%;
+                border-width: 1px;
+            }
+            .portal-header h1 {
+                font-size: 20px;
+            }
+            .navbar {
+                padding: 15px 20px;
+            }
+            .navbar h2 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animation binaire de fond (0 et 1) -->
+    <canvas id="matrixCanvas"></canvas>
+
+    <!-- Conteneur de connexion -->
+    <div class="portal-container">
+        <div class="portal-header">
+            <h1>BAYANGBE</h1>
+            <p>[ SECURE ACCESS PORTAL ]</p>
+        </div>
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <!-- Rendu propre des champs du formulaire d'authentification Django -->
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn-submit">Connexion</button>
+        </form>
+
+        <div class="portal-footer">
+            <a href="{% url 'register' %}">Créer un compte</a>
+            <a href="{% url 'password_reset' %}">Mot de passe oublié ?</a>
+        </div>
+    </div>
+
+    <!-- Script JavaScript pour l'animation Matrix Bleu & Blanc -->
+    <script>
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const binaryChars = '01';
+        const fontSize = 16;
+        let columns = Math.floor(canvas.width / fontSize);
+        let drops = [];
+
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1;
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(3, 7, 18, 0.08)'; // Effet de traînée fluide
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = binaryChars.charAt(Math.floor(Math.random() * binaryChars.length));
+                
+                // Alternance bleu néon et blanc pur pour un effet hacker dynamique
+                if (Math.random() > 0.85) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = '#ffffff';
+                } else {
+                    ctx.fillStyle = '#00d2ff';
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = '#00d2ff';
+                }
+
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 40);
+    </script>
+</body>
+</html>

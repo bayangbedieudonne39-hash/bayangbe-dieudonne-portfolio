@@ -1,0 +1,304 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAYANGBE PORTAL // CV Officiel</title>
+    <!-- Police Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; }
+        body {
+            background-color: #030712; color: #ffffff; min-height: 100vh;
+            display: flex; flex-direction: column; overflow-x: hidden; position: relative;
+        }
+        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+
+        /* Barre de navigation */
+        .navbar {
+            position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 40px; background: rgba(8, 15, 30, 0.9); border-bottom: 1px solid #1e3a8a;
+            backdrop-filter: blur(8px); box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
+        }
+        .navbar h2 { color: #00d2ff; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0, 210, 255, 0.6); font-size: 20px; }
+        .nav-actions { display: flex; gap: 15px; align-items: center; }
+        .btn-cv {
+            padding: 8px 16px; background: rgba(0, 210, 255, 0.2); border: 1px solid #00d2ff; border-radius: 4px; 
+            color: #00d2ff; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 12px; 
+            transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;
+        }
+        .btn-cv:hover { background: #00d2ff; color: #030712; box-shadow: 0 0 12px rgba(0, 210, 255, 0.8); }
+        .btn-logout {
+            padding: 8px 16px; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; border-radius: 4px; 
+            color: #f87171; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 12px; 
+            transition: all 0.3s ease; text-decoration: none;
+        }
+        .btn-logout:hover { background: #ef4444; color: #fff; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
+
+        /* Contenu principal du Portfolio */
+        .portfolio-container {
+            position: relative; z-index: 2; width: 100%; max-width: 950px; margin: 40px auto; padding: 0 20px;
+        }
+
+        .card {
+            background: rgba(8, 15, 30, 0.88); border: 2px solid #00d2ff; box-shadow: 0 0 30px rgba(0, 210, 255, 0.25);
+            padding: 35px; border-radius: 12px; backdrop-filter: blur(8px); margin-bottom: 30px;
+        }
+
+        /* En-tête du profil */
+        .profile-header {
+            display: flex; align-items: center; gap: 25px; border-bottom: 1px solid #1e3a8a; padding-bottom: 25px; margin-bottom: 25px;
+        }
+        .avatar-box {
+            width: 120px; height: 120px; border-radius: 50%; border: 2px solid #00d2ff;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.6); overflow: hidden; background: #0b1329; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .avatar-box img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+        .profile-titles h1 { color: #00d2ff; font-size: 26px; letter-spacing: 1.5px; margin-bottom: 5px; text-shadow: 0 0 8px rgba(0, 210, 255, 0.5); }
+        .profile-titles h3 { color: #38bdf8; font-size: 15px; font-weight: 400; margin-bottom: 12px; }
+        
+        /* Liens de contact cliquables */
+        .contact-links {
+            display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;
+        }
+        .contact-btn {
+            display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(0, 210, 255, 0.1);
+            border: 1px solid #00d2ff; border-radius: 6px; color: #38bdf8; font-size: 13px; text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .contact-btn:hover {
+            background: #00d2ff; color: #030712; box-shadow: 0 0 12px rgba(0, 210, 255, 0.8);
+        }
+
+        /* Sections du CV */
+        .section-title {
+            color: #00d2ff; font-size: 16px; text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 12px; border-left: 3px solid #00d2ff; padding-left: 10px; margin-top: 25px;
+        }
+        p, .bio-text { color: #cbd5e1; font-size: 14px; line-height: 1.6; }
+
+        /* Grille des compétences */
+        .skills-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; margin-top: 15px;
+        }
+        .skill-card {
+            background: rgba(2, 6, 23, 0.8); border: 1px solid #1e3a8a; padding: 15px; border-radius: 8px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .skill-card:hover { border-color: #00d2ff; box-shadow: 0 0 12px rgba(0, 210, 255, 0.3); }
+        .skill-card h4 { color: #38bdf8; font-size: 14px; margin-bottom: 6px; }
+        .skill-card p { color: #94a3b8; font-size: 13px; }
+
+        /* Timeline & Tableaux d'expériences/formations */
+        .timeline-item {
+            background: rgba(2, 6, 23, 0.6); border-left: 2px solid #00d2ff; padding: 12px 15px; margin-bottom: 12px; border-radius: 0 6px 6px 0;
+        }
+        .timeline-item .year { color: #38bdf8; font-weight: 700; font-size: 13px; }
+        .timeline-item .title { color: #ffffff; font-size: 14px; font-weight: 700; margin-top: 2px; }
+        .timeline-item .desc { color: #94a3b8; font-size: 13px; margin-top: 4px; }
+
+        /* Tableau de formation pro */
+        table.edu-table {
+            width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px;
+        }
+        table.edu-table th, table.edu-table td {
+            border: 1px solid #1e3a8a; padding: 10px; text-align: left;
+        }
+        table.edu-table th {
+            background: rgba(0, 210, 255, 0.15); color: #00d2ff; text-transform: uppercase; font-size: 12px;
+        }
+        table.edu-table td { color: #cbd5e1; background: rgba(2, 6, 23, 0.6); }
+
+        .info-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;
+        }
+        .info-box {
+            background: rgba(2, 6, 23, 0.6); border: 1px solid #1e3a8a; padding: 12px; border-radius: 6px; font-size: 13px; color: #94a3b8;
+        }
+        .info-box strong { color: #38bdf8; }
+
+        /* Badge statut */
+        .badge { display: inline-block; padding: 5px 12px; background: rgba(0, 210, 255, 0.1); border: 1px solid #00d2ff; color: #38bdf8; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 15px; }
+
+        @media (max-width: 600px) {
+            .profile-header { flex-direction: column; text-align: center; }
+            .contact-links { justify-content: center; }
+            .navbar { padding: 15px 20px; flex-direction: column; gap: 10px; }
+            .nav-actions { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+
+    <div class="navbar">
+        <h2>BAYANGBE PORTAL // CV OFFICIEL</h2>
+        <div class="nav-actions">
+            <a href="mailto:bayangbedieudonne39@gmail.com" class="btn-cv">📥 Contact direct</a>
+            <a href="{% url 'logout' %}" class="btn-logout">Déconnexion</a>
+        </div>
+    </div>
+
+    <div class="portfolio-container">
+        <!-- En-tête profil & Contacts cliquables -->
+        <div class="card">
+            <span class="badge">POSTE : TECHNICIEN SUPÉRIEUR SYSTÈMES & RÉSEAUX </span>
+            <div class="profile-header">
+                <div class="avatar-box">
+                    <!-- Photo insérée via static Django -->
+                    <img src="{% static 'images/profile.png' %}" alt="Bayangbe Dieudonné" onerror="this.src='https://via.placeholder.com/120/0b1329/00d2ff?text=BD'">
+                </div>
+                <div class="profile-titles">
+                    <h1>BAYANGBE DIEUDONNÉ</h1>
+                    <h3>Technicien supérieur en informatique - Systèmes & Réseaux</h3>
+                    
+                    <!-- Contacts cliquables -->
+                    <div class="contact-links">
+                        <a href="mailto:bayangbedieudonne39@gmail.com" class="contact-btn">📧 bayangbedieudonne39@gmail.com</a>
+                        <a href="tel:+237695875625" class="contact-btn">📞 +237 695 875 625</a>
+                        <a href="https://wa.me/237695875625" target="_blank" class="contact-btn">💬 WhatsApp (695875625)</a>
+                        <span class="contact-btn" style="border-color: #1e3a8a; color: #94a3b8;">📍 Garoua, Cameroun</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title">Profil Professionnel</div>
+            <p class="bio-text">
+                Technicien supérieur des travaux informatiques, diplômé de l'Institut Africain d'Informatique (IAI-Cameroun), option Systèmes et Réseaux. Je possède des compétences polyvalentes en administration Linux, configuration et maintenance des réseaux (DHCP, DNS, NAT, SSH), administration de bases de données, développement d'applications web et assistance technique. Titulaire de la certification IC3 de Microsoft, j'ai également une expérience dans l'enseignement de l'informatique et des mathématiques. Rigoureux, curieux, adaptable et doté d'un bon esprit d'équipe, je suis capable de diagnostiquer et de résoudre des problèmes techniques avec autonomie et sens des responsabilités. Mon objectif est de mettre mes compétences techniques au service d'une organisation ambitieuse tout en continuant à développer mon expertise professionnelle.
+            </p>
+        </div>
+
+        <!-- Compétences professionnelles -->
+        <div class="card">
+            <div class="section-title">Compétences Professionnelles</div>
+            <div class="skills-grid">
+                <div class="skill-card">
+                    <h4>Systèmes & Réseaux</h4>
+                    <p>Administration Linux, configuration et maintenance des réseaux, DHCP, DNS, NAT, SSH.</p>
+                </div>
+                <div class="skill-card">
+                    <h4>Services d'Infrastructure</h4>
+                    <p>Samba Active Directory, FreeRADIUS (gestion centralisée des accès réseau).</p>
+                </div>
+                <div class="skill-card">
+                    <h4>Cybersécurité & Analyse</h4>
+                    <p>Cybersécurité défensive, analyse réseau avec Nmap et Wireshark.</p>
+                </div>
+                <div class="skill-card">
+                    <h4>Bases de Données</h4>
+                    <p>MySQL, administration de bases de données.</p>
+                </div>
+                <div class="skill-card">
+                    <h4>Développement</h4>
+                    <p>Python, Django, C/C++, PHP, HTML, CSS, développement web.</p>
+                </div>
+                <div class="skill-card">
+                    <h4>Bureautique</h4>
+                    <p>Rédaction, traitement et mise en forme de documents professionnels; certification IC3 (Microsoft).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expériences Professionnelles -->
+        <div class="card">
+            <div class="section-title">Expériences Professionnelles</div>
+            <div class="timeline-item">
+                <div class="year">2026 (3 mois)</div>
+                <div class="title">Stage académique - Informaticien | Inspection Pédagogique de l'Informatique du Nord</div>
+                <div class="desc">Stage de fin de formation DTS en Informatique.</div>
+            </div>
+            <div class="timeline-item">
+                <div class="year">2023-2024 (1 an)</div>
+                <div class="title">Enseignant d'informatique et de mathématiques | Collège (Enseignant vacataire)</div>
+                <div class="desc">Développement des capacités pédagogiques, du sens de la communication et de l'aptitude à transmettre des connaissances de manière claire et structurée.</div>
+            </div>
+        </div>
+
+        <!-- Formation et Diplômes -->
+        <div class="card">
+            <div class="section-title">Formation et Diplômes</div>
+            <table class="edu-table">
+                <thead>
+                    <tr>
+                        <th>Année</th>
+                        <th>Diplôme</th>
+                        <th>Institution</th>
+                        <th>Mention</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>2026</strong></td>
+                        <td>DTS en Informatique (Brevet de Technicien)</td>
+                        <td>IAI-Cameroun</td>
+                        <td>Bien</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2023</strong></td>
+                        <td>Licence 1</td>
+                        <td>Université de Maroua</td>
+                        <td>Assez bien</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2022 / 2021</strong></td>
+                        <td>BACC C / PROBATOIRE C</td>
+                        <td>Lycée de Tchatibali</td>
+                        <td>Passable / Passable</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2019</strong></td>
+                        <td>BEPC (Brevet d'Études du Premier Cycle)</td>
+                        <td>Lycée de Tchatibali</td>
+                        <td>Assez bien</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2015</strong></td>
+                        <td>CEP (Certificat d'Études Primaires)</td>
+                        <td>École Publique de Bindiriel</td>
+                        <td>Très bien</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="margin-top: 15px;">
+                <p><strong>Niveau d'étude :</strong> BAC+2 - Informatique (système francophone) - 2026</p>
+            </div>
+        </div>
+
+        <!-- Langues et Informations Personnelles -->
+        <div class="card">
+            <div class="section-title">Langues & Informations Personnelles</div>
+            <div class="info-grid">
+                <div class="info-box"><strong>Langues :</strong> Français (parlé, lu, écrit) ; Anglais (lu, écrit)</div>
+                <div class="info-box"><strong>Date de naissance :</strong> 08 février 2003 à Koitakwa</div>
+                <div class="info-box"><strong>Situation familiale :</strong> Célibataire</div>
+                <div class="info-box"><strong>Nationalité / Résidence :</strong> Camerounaise / Cameroun</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Animation Matrix -->
+    <script>
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        const binaryChars = '01'; const fontSize = 16;
+        let columns = Math.floor(canvas.width / fontSize); let drops = [];
+        for (let i = 0; i < columns; i++) { drops[i] = 1; }
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(3, 7, 18, 0.08)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = fontSize + 'px monospace';
+            for (let i = 0; i < drops.length; i++) {
+                const text = binaryChars.charAt(Math.floor(Math.random() * binaryChars.length));
+                ctx.fillStyle = Math.random() > 0.85 ? '#ffffff' : '#00d2ff';
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) { drops[i] = 0; }
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 40);
+    </script>
+</body>
+</html>
